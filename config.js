@@ -1,6 +1,6 @@
 var config = {
     server_port: 20000,
-    mongo_uri: "mongodb://localhost/movierecommendation",
+    mongo_uri: "mongodb+srv://amin:FKtLksFp3p5Thhh@cluster0.gqpis.mongodb.net/myFirstDatabase?retryWrites=true&w=majority",
     secret: "0xc106ece52802f2cd3fba36defbcc9d708bcad751efe6246d21e32ed16844bc6b",
     nodemailerPass:"Adanali2018",
     nodemailerEmail:"edummy304@gmail.com",
