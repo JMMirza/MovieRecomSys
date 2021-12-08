@@ -10,7 +10,7 @@ app.use(express.urlencoded({ extended: true }))
 // routes
 app.use('/api', require('./routes/routes.js'));
 
-const port = config.server_port || 3000
+const port = process.env.PORT  || 3000
 module.exports = app.listen(port, () => {
     console.log(`Listening at port ${port}`);
 })
