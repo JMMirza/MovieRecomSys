@@ -1,7 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
-const {simpleSignIn} = require('../controller/user/signin');
+const {
+  simpleSignIn,
+  passportFB,
+  passportTW
+
+} = require('../controller/user/signin');
 const getUser = require('../controller/user/getUser');
 const signup = require('../controller/user/signup');
 const update = require('../controller/user/update');
@@ -15,22 +20,46 @@ const updateMiddleware = require('../middleware/updateMiddleware')
 const signinMiddleware = require('../middleware/signinMiddleware')
 const twoFAMiddleware = require('../middleware/twoFAMiddleware')
 const checkEmail = require('../middleware/checkEmail');
+
 router.post('/signup', [signupMiddleware, age, checkEmail], signup);
 router.post('/signin', signinMiddleware, simpleSignIn);
-router.get('/get/:id', auth, getUser);
-router.put('/update/:id', [updateMiddleware, age, auth], update);
-router.get('/user/verify/:id', verify)
 router.post('/user/tvalidate', [twoFAMiddleware, auth], tFA)
+router.put('/update/:id', [updateMiddleware, age, auth], update);
+router.get('/get/:id', auth, getUser);
+router.get('/user/verify/:id', verify)
 router.get('/user/twoFA', auth, sendToken)
-router.get('/login/facebook', 
-  passport.authenticate('facebook', { scope : 'email' }
-));
- 
+router.get('/login/facebook',
+  passportFB.authenticate('facebook'));
+
 // handle the callback after facebook has authenticated the user
 router.get('/login/facebook/callback',
-  passport.authenticate('facebook', {
-    successRedirect : '/home',
-    failureRedirect : '/'
-  })
+  passportFB.authenticate('facebook', {
+    successRedirect: '/',
+    failureRedirect: '/failed'
+  }),
+  function (req, res) {
+    console.log(req.user, req.isAuthenticated())
+    res.send("logged in")
+  }
 );
+router.get('/', (req, res) => {
+  res.send("Hello world")
+})
+router.get('/failed', (req, res) => {
+  res.send("login failed")
+})
+router.get('/login/twitter', passportTW.authenticate('twitter'));
+
+router.get('/logout', (req, res, next) => {
+  req.logout();
+  res.redirect('/');
+});
+
+router.get('/login/twitter/callback',
+  passportTW.authenticate('twitter', {
+    failureRedirect: '/'
+  }),
+  (req, res, next) => {
+    res.redirect('/');
+  });
 module.exports = router;

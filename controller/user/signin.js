@@ -6,15 +6,18 @@ const {
 } = require('../../model/userFB')
 const bcrypt = require('bcrypt')
 const config = require('../../config')
-const passport = require('passport');
-const {
-    Strategy
-} = require('passport-facebook');
+const passportFB = require('passport');
+const passportTW = require('passport');
+const StrategyFB = require('passport-facebook').Strategy;
+const StrategyTW = require('passport-twitter').Strategy;
+// const {
+//     Strategy
+// } = require('passport-twitter')
 
-passport.use('facebook', new Strategy({
+passportFB.use('facebook', new StrategyFB({
         clientID: config.FACEBOOK_CLIENT_ID,
         clientSecret: config.FACEBOOK_CLIENT_SECRET,
-        callbackURL: config.CallBackUrl
+        callbackURL: config.CallBackUrlFB
     },
 
     // facebook will send back the tokens and profile
@@ -34,7 +37,7 @@ passport.use('facebook', new Strategy({
                         firstName: profile.name.givenName,
                         lastName: profile.name.familyName,
                         email: profile.emails[0].value
-                    }) 
+                    })
                     return done(null, userFb);
                 }
             } catch (error) {
@@ -43,6 +46,38 @@ passport.use('facebook', new Strategy({
             // find the user in the database based on their facebook id
         });
     }))
+passportTW.use('twitter',new StrategyTW({
+        consumerKey: config.TWITTER_CONSUMER_KEY,
+        consumerSecret: config.TWITTER_CONSUMER_SECRET,
+        callbackURL: config.CallBackUrlTW
+    },
+    function (accessToken, refreshToken, profile, done) {
+
+        var searchQuery = {
+            name: profile.displayName
+        };
+
+        var updates = {
+            name: profile.displayName,
+            someID: profile.id
+        };
+
+        var options = {
+            upsert: true
+        };
+
+        // update the user if s/he exists or add a new user
+        User.findOneAndUpdate(searchQuery, updates, options, function (err, user) {
+            if (err) {
+                return done(err);
+            } else {
+                return done(null, user);
+            }
+        });
+    }
+
+));
+
 async function simpleSignIn(req, res) {
     const email = req.body.email
     const pass = req.body.password
@@ -95,4 +130,6 @@ async function simpleSignIn(req, res) {
 
 module.exports = {
     simpleSignIn,
+    passportFB,
+    passportTW
 }
