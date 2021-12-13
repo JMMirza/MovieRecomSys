@@ -3,6 +3,7 @@ const speakeasy = require("speakeasy");
 
 module.exports = async(req, res) => {
     try {
+        console.log(req.user)
         let tokenUser = await User.findById(req.user._id)
         const anotherUser = await User.findOne({ email: req.user.email })
         if (!tokenUser) {

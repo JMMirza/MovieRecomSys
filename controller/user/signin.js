@@ -4,6 +4,9 @@ const {
 const {
     UserFB
 } = require('../../model/userFB')
+const {
+    UserTW
+} = require('../../model/userTW')
 const bcrypt = require('bcrypt')
 const config = require('../../config')
 const passportFB = require('passport');
@@ -25,14 +28,16 @@ passportFB.use('facebook', new StrategyFB({
         // asynchronous
         process.nextTick(async function () {
             try {
-                const user = await UserFB.findById(profile.id)
+                const user = await UserFB.findOne({
+                    user_id: profile.id
+                })
                 // if the user is found, then log them in
                 if (user) {
                     return done(null, user); // user found, return that user
                 } else {
                     // if there is no user found with that facebook id, create them
                     const userFb = await UserFB.create({
-                        id: profile.id,
+                        user_id: profile.id,
                         access_token: access_token,
                         firstName: profile.name.givenName,
                         lastName: profile.name.familyName,
@@ -46,34 +51,34 @@ passportFB.use('facebook', new StrategyFB({
             // find the user in the database based on their facebook id
         });
     }))
-passportTW.use('twitter',new StrategyTW({
+passportTW.use('twitter', new StrategyTW({
         consumerKey: config.TWITTER_CONSUMER_KEY,
         consumerSecret: config.TWITTER_CONSUMER_SECRET,
         callbackURL: config.CallBackUrlTW
     },
-    function (accessToken, refreshToken, profile, done) {
-
-        var searchQuery = {
-            name: profile.displayName
-        };
-
-        var updates = {
-            name: profile.displayName,
-            someID: profile.id
-        };
-
-        var options = {
-            upsert: true
-        };
-
-        // update the user if s/he exists or add a new user
-        User.findOneAndUpdate(searchQuery, updates, options, function (err, user) {
-            if (err) {
-                return done(err);
+    async function (accessToken, refreshToken, profile, done) {
+        try {
+            console.log(profile)
+            const user = await UserTW.findOne({
+                user_id: profile.id
+            })
+            // if the user is found, then log them in
+            if (user) {
+                return done(null, user); // user found, return that user
             } else {
-                return done(null, user);
+                // if there is no user found with that facebook id, create them
+                const userTW = await UserTW.create({
+                    user_id: profile.id,
+                    access_token: accessToken,
+                    firstName: profile.displayName,
+                    username: profile.username,
+                    photo: profile.photos[0].value
+                })
+                return done(null, userTW);
             }
-        });
+        } catch (error) {
+            return done(error);
+        }
     }
 
 ));
@@ -102,7 +107,7 @@ async function simpleSignIn(req, res) {
         }
         const token = user.generateAuthToken()
         const temptoken = user.generateTempAuthToken()
-        if (user.twoFA || user.smsAuth) {
+        if (user.twoFA === false) {
             if (user.session === false) {
                 return res.header('x-auth-token', temptoken).status(200).send({
                     message: "user logged in successfully, complete your two step authentication."

@@ -50,12 +50,7 @@ router.get('/failed', (req, res) => {
 })
 router.get('/login/twitter', passportTW.authenticate('twitter'));
 
-router.get('/logout', (req, res, next) => {
-  req.logout();
-  res.redirect('/');
-});
-
-router.get('/login/twitter/callback',
+router.get('/login/twiter/callback',
   passportTW.authenticate('twitter', {
     failureRedirect: '/'
   }),

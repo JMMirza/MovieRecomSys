@@ -2,7 +2,7 @@
 const jwt = require('jsonwebtoken')
 const config = require('../config')
 
-const userFbSchema = new mongoose.Schema({
+const userTWSchema = new mongoose.Schema({
     user_id: {
         type: String,
     },
@@ -12,25 +12,22 @@ const userFbSchema = new mongoose.Schema({
     firstName: {
         type: String,
     },
-    lastName: {
+    username: {
         type: String,
     },
-    gender: {
-        type: String,
-    },
-    email: {
-        type: String,
+    photo: {
+        type: String
     }
 })
-userFbSchema.methods.generateAuthToken = function() {
+userTWSchema.methods.generateAuthToken = function() {
     const token = jwt.sign({ _id: this._id }, config.secret, { expiresIn: "1d" })
     return token
 }
-userFbSchema.methods.generateTempAuthToken = function() {
+userTWSchema.methods.generateTempAuthToken = function() {
     const token = jwt.sign({ email: this.email, contact: this.contact }, config.secret, { expiresIn: "300s" })
     return token
 }
 
-const UserFB = mongoose.model('UserFB', userFbSchema)
+const UserTW = mongoose.model('UserTW', userTWSchema)
 
-module.exports.UserFB = UserFB
+module.exports.UserTW = UserTW

@@ -1,5 +1,6 @@
 const Joi = require('joi')
 module.exports = function(req, res, next) {
+    req.body.gender = req.body.gender.toLowerCase()
     const schema = {
         name: Joi.string().min(3).max(255).required().error((errors) => {
             return errors.map(error => {
