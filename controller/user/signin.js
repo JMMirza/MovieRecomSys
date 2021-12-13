@@ -13,9 +13,6 @@ const passportFB = require('passport');
 const passportTW = require('passport');
 const StrategyFB = require('passport-facebook').Strategy;
 const StrategyTW = require('passport-twitter').Strategy;
-// const {
-//     Strategy
-// } = require('passport-twitter')
 
 passportFB.use('facebook', new StrategyFB({
         clientID: config.FACEBOOK_CLIENT_ID,
@@ -24,9 +21,8 @@ passportFB.use('facebook', new StrategyFB({
     },
 
     // facebook will send back the tokens and profile
-    function (access_token, refresh_token, profile, done) {
+    async function (access_token, refresh_token, profile, done) {
         // asynchronous
-        process.nextTick(async function () {
             try {
                 const user = await UserFB.findOne({
                     user_id: profile.id
@@ -49,8 +45,8 @@ passportFB.use('facebook', new StrategyFB({
                 return done(error);
             }
             // find the user in the database based on their facebook id
-        });
-    }))
+        }
+    ))
 passportTW.use('twitter', new StrategyTW({
         consumerKey: config.TWITTER_CONSUMER_KEY,
         consumerSecret: config.TWITTER_CONSUMER_SECRET,
