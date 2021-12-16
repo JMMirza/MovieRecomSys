@@ -9,7 +9,7 @@ var config = {
     TWITTER_CONSUMER_KEY:"DyLk7MJ90XoZkYSq9koHpNugs",
     TWITTER_CONSUMER_SECRET: "P72ZCuDX4xrNL2051dfKwUEoZCcretibo6vaRFwVBhCth61zBy",
     SESSION_SECRET: "3fgfvhbjnvfjd78vdkfjnvjdfhm89nvd",
-    CallBackUrlFB: `https://movie9871.herokuapp.com/api/login/facebook/callback`,
-    CallBackUrlTW: `https://movie9871.herokuapp.com/api/login/twiter/callback`
+    CallBackUrlFB: `http://localhost:3000/api/login/facebook/callback`,
+    CallBackUrlTW: `http://localhost:3000/api/login/twiter/callback`
 };
 module.exports = config;

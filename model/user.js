@@ -5,7 +5,6 @@
  const userSchema = new mongoose.Schema({
      name: {
          type: String,
-         trim: true
      },
      email: {
          type: String,
@@ -22,7 +21,6 @@
      },
      password: {
          type: String,
-         trim: true,
      },
      isVerified: {
          type: Boolean,
