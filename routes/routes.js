@@ -3,8 +3,8 @@ const router = express.Router();
 const {
   signUp,
   simpleSignIn,
-  likeMovies
-
+  likeMovies,
+  machineLearning
 } = require('../controller/user/postMethods');
 const {
   getMovies,
@@ -72,4 +72,5 @@ router.get('/login/twiter/callback',
     // res.redirect('/');
     res.send(req.user)
   });
+router.post('/search',auth, machineLearning)
 module.exports = router;

@@ -10,9 +10,9 @@ const {
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt')
 const config = require('../../config')
-
-
-
+const {
+    PythonShell
+} = require('python-shell')
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -139,8 +139,37 @@ async function likeMovies(req, res) {
         })
     }
 }
+async function machineLearning(req, res) {
+    try {
+        const user = await User.findById(req.user._id)
+        if (!user) return res.status(403).send({
+            message: "invalid user"
+        })
+        let options = {
+            // mode: 'text',
+            pythonOptions: ['-u'], // get print results in real-time
+            // scriptPath: 'evesdrop.py', //If you are having python_test.py script in same folder, then it's optional.
+            args: [req.body.movie] //An argument which can be accessed in the script using sys.argv[1]
+        };
+
+
+        PythonShell.run('movie_recommendation.py', options, function (err, result) {
+            if (err) throw err;
+            // result is an array consisting of messages collected
+            //during execution of script.
+            console.log('result: ', result.toString());
+            res.status(200).send({
+                search: result
+            })
+        });
+    } catch (error) {
+        res.status(500).send(error.message)
+    }
+
+}
 module.exports = {
     signUp,
     simpleSignIn,
-    likeMovies
+    likeMovies,
+    machineLearning
 }
