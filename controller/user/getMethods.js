@@ -53,7 +53,9 @@ async function getUser(req, res) {
             message: "Details of User with corresponding id is below: ",
             id: `${user._id}`,
             name: `${user.name}`,
-            email: `${user.email}`
+            email: `${user.email}`,
+            contact:`${user.contact}`,
+            dob: `${user.dob}`
         })
     } catch (error) {
         res.status(400).send({
