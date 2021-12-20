@@ -25,7 +25,7 @@ async function getMovies(req, res) {
                 movieMap[movie._id] = movie;
             });
             // console.log(movieMap)
-            res.send(movieMap);
+            return res.send(movieMap);
         }
         const movieByID = await movie.findById(req.query.id)
         if (movieByID) {
