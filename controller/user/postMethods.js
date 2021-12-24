@@ -8,6 +8,9 @@ const {
     UserWatchLaterMovie
 } = require('../../model/userWatchLater')
 const {
+    UserWatchMovie
+} = require('../../model/userWatchHistory')
+const {
     movie
 } = require('../../model/movies')
 const nodemailer = require('nodemailer');
@@ -218,11 +221,61 @@ async function watchLater(req, res) {
         })
     }
 }
+async function watchHistory(req, res) {
+    try {
+        const user = await User.findById(req.user._id)
+        if (!user) return res.status(403).send({
+            message: "invalid user"
+        })
+        const movieByID = await movie.findById(req.body.id)
+        if (!movieByID) {
+            return res.status(400).send("no movie found")
+        }
+        const likedMovie = await UserWatchMovie.findOne({
+            user_id: user._id,
+            movie_id: movieByID._id
+        })
+        if (likedMovie) {
+            return res.send("already in watch later")
+        }
+        await UserWatchLaterMovie.create({
+            user_id: user._id,
+            movie_id: movieByID._id,
+        })
+        res.status(200).send("Successfully added the movie")
+    } catch (error) {
+        console.log(error)
+        return res.status(400).send({
+            message: error.message
+        })
+    }
+}
+async function getWatchHistory(req, res) {
+    try {
+        const user = await User.findById(req.user._id)
+        if (!user) return res.status(403).send({
+            message: "invalid user"
+        })
+        const likedMovie = await UserWatchMovie.find({
+            user_id: user._id,
+            movie_id: req.body.movieid
+        })
+        
+        res.status(200).send(likedMovie)
+    } catch (error) {
+        console.log(error)
+        return res.status(400).send({
+            message: error.message
+        })
+    }
+}
 module.exports = {
     signUp,
     simpleSignIn,
     likeMovies,
     listLikemovies,
     watchLater,
+    watchHistory,
+    getWatchHistory,
     machineLearning
 }

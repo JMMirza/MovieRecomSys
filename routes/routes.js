@@ -6,7 +6,9 @@ const {
   likeMovies,
   listLikemovies,
   machineLearning,
-  watchLater
+  watchLater,
+  watchHistory,
+  getWatchHistory
 } = require('../controller/user/postMethods');
 const {
   getMovies,
@@ -36,6 +38,8 @@ const twoFAMiddleware = require('../middleware/twoFAMiddleware')
 router.post('/likemovie', auth, likeMovies);
 router.post('/listlikemovie', auth, listLikemovies);
 router.post('/watchLater', auth, watchLater);
+router.post('/watchHistory', auth, watchHistory);
+router.post('/getwatchHistory', auth, getWatchHistory);
 router.post('/signup', [signupMiddleware, age, checkEmail], signUp);
 router.post('/signin', signinMiddleware, simpleSignIn);
 router.post('/user/tvalidate', [twoFAMiddleware, auth], twoFA)
