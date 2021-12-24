@@ -167,9 +167,28 @@ async function machineLearning(req, res) {
     }
 
 }
+async function listLikemovies(req,res) {
+    try {
+        const user = await User.findById(req.user._id)
+        if (!user) return res.status(403).send({
+            message: "invalid user"
+        })
+        const likedMovie = await UserLikeMovie.find({
+            user_id: user._id,
+            movie_id: req.body.movieid
+        })
+        res.status(200).send(likedMovie)
+    } catch (error) {
+        console.log(error)
+        return res.status(400).send({
+            message: error.message
+        })
+    }
+}
 module.exports = {
     signUp,
     simpleSignIn,
     likeMovies,
+    listLikemovies,
     machineLearning
 }

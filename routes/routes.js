@@ -4,6 +4,7 @@ const {
   signUp,
   simpleSignIn,
   likeMovies,
+  listLikemovies,
   machineLearning
 } = require('../controller/user/postMethods');
 const {
@@ -32,6 +33,7 @@ const signinMiddleware = require('../middleware/signinMiddleware')
 const twoFAMiddleware = require('../middleware/twoFAMiddleware')
 
 router.post('/likemovie', auth, likeMovies);
+router.post('/listlikemovie', auth, likeMovies);
 router.post('/signup', [signupMiddleware, age, checkEmail], signUp);
 router.post('/signin', signinMiddleware, simpleSignIn);
 router.post('/user/tvalidate', [twoFAMiddleware, auth], twoFA)
