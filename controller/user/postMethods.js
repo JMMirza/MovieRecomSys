@@ -5,6 +5,9 @@ const {
     UserLikeMovie
 } = require('../../model/userLikesMovies')
 const {
+    UserWatchLaterMovie
+} = require('../../model/userWatchLater')
+const {
     movie
 } = require('../../model/movies')
 const nodemailer = require('nodemailer');
@@ -131,7 +134,7 @@ async function likeMovies(req, res) {
             user_id: user._id,
             movie_id: movieByID._id
         })
-        res.status(200).send("Successfully added the movie")
+        res.status(200).send("Successfully liked the movie")
     } catch (error) {
         console.log(error)
         return res.status(400).send({
@@ -167,7 +170,7 @@ async function machineLearning(req, res) {
     }
 
 }
-async function listLikemovies(req,res) {
+async function listLikemovies(req, res) {
     try {
         const user = await User.findById(req.user._id)
         if (!user) return res.status(403).send({
@@ -185,10 +188,41 @@ async function listLikemovies(req,res) {
         })
     }
 }
+async function watchLater(req, res) {
+    try {
+        const user = await User.findById(req.user._id)
+        if (!user) return res.status(403).send({
+            message: "invalid user"
+        })
+        const movieByID = await movie.findById(req.body.id)
+        if (!movieByID) {
+            return res.status(400).send("no movie found")
+        }
+        const likedMovie = await UserWatchLaterMovie.findOne({
+            user_id: user._id,
+            movie_id: movieByID._id
+        })
+        if (likedMovie) {
+            return res.send("already in watch later")
+        }
+        await UserWatchLaterMovie.create({
+            user_id: user._id,
+            movie_id: movieByID._id,
+            time: req.body.time
+        })
+        res.status(200).send("Successfully added the movie")
+    } catch (error) {
+        console.log(error)
+        return res.status(400).send({
+            message: error.message
+        })
+    }
+}
 module.exports = {
     signUp,
     simpleSignIn,
     likeMovies,
     listLikemovies,
+    watchLater,
     machineLearning
 }
