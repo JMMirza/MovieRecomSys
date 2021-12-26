@@ -8,7 +8,10 @@ const {
   machineLearning,
   watchLater,
   watchHistory,
-  getWatchHistory
+  getWatchHistory,
+  forgotPass,
+  resetPass,
+  checkResetCode
 } = require('../controller/user/postMethods');
 const {
   getMovies,
@@ -35,6 +38,9 @@ const updateMiddleware = require('../middleware/updateMiddleware')
 const signinMiddleware = require('../middleware/signinMiddleware')
 const twoFAMiddleware = require('../middleware/twoFAMiddleware')
 
+router.post('/forgotPass', forgotPass)
+router.post('/checkCode', auth, checkResetCode)
+router.post('/resetPassword', auth, resetPass)
 router.post('/likemovie', auth, likeMovies);
 router.post('/listlikemovie', auth, listLikemovies);
 router.post('/watchLater', auth, watchLater);
@@ -80,5 +86,5 @@ router.get('/login/twiter/callback',
     // res.redirect('/');
     res.send(req.user)
   });
-router.post('/search',auth, machineLearning)
+router.post('/search', auth, machineLearning)
 module.exports = router;

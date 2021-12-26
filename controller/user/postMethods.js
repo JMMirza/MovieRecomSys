@@ -15,6 +15,7 @@ const {
 } = require('../../model/movies')
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 const config = require('../../config')
 const {
     PythonShell
@@ -260,12 +261,92 @@ async function getWatchHistory(req, res) {
             user_id: user._id,
             movie_id: req.body.movieid
         })
-        
+
         res.status(200).send(likedMovie)
     } catch (error) {
         console.log(error)
         return res.status(400).send({
             message: error.message
+        })
+    }
+}
+async function forgotPass(req, res) {
+    try {
+        const user = await User.findOne({
+            email: req.body.email
+        })
+        if (!user) return res.status(403).send({
+            message: "user not found"
+        })
+        let val = Math.floor(100000 + Math.random() * 900000);
+        const salt = await bcrypt.genSalt(10)
+        val= await bcrypt.hash(val, salt)
+        user.resetPassCode =val
+        await user.save()
+        const temptoken = user.generateTempAuthToken()
+        console.log(`${val}`)
+        await transporter.sendMail({
+            from: config.nodemailerEmail,
+            to: user.email,
+            subject: 'Reset Password',
+            html: `Use this code ${val} to reset your password.`
+        })
+        return res.status(200).send({
+            message: "Kindly check your email",
+            auth:temptoken
+        })
+    } catch (error) {
+        return res.status(500).send({
+            message: "Error in forget password",
+            error: error.message
+        })
+    }
+}
+async function checkResetCode(req,res){
+    try {
+        const user = await User.findOne({
+            email:req.user.email
+        })
+        if(!user){
+            return res.status(400).send("invalid user")
+        }
+        const validCode = await bcrypt.compare(req.body.code, user.resetPassCode)
+        if (!validCode) return res.status(400).send({
+            message: "invalid code"
+        });
+        return res.status(400).send({
+            message: "Done"
+        });
+    } catch (error) {
+        return res.status(500).send({
+            message: "Error in forget password",
+            error: error.message
+        })
+    }
+}
+async function resetPass(req, res) {
+    try {
+        const user = await User.findOne({
+            email:req.user.email
+        })
+        if(!user){
+            return res.status(400).send("invalid user")
+        }
+        
+        if (req.body.password !== req.body.cpassword) {
+            return res.status(400).send({
+                message: "Password does not match"
+            })
+        }
+        const salt = await bcrypt.genSalt(10)
+        req.body.password = await bcrypt.hash(req.body.password, salt)
+        user.password = req.body.password
+        await user.save()
+        return res.send("Password changed Successfully")
+    } catch (error) {
+        return res.status(500).send({
+            message: "error while reseting the password",
+            error: error.message
         })
     }
 }
@@ -277,5 +358,8 @@ module.exports = {
     watchLater,
     watchHistory,
     getWatchHistory,
-    machineLearning
+    machineLearning,
+    forgotPass,
+    resetPass,
+    checkResetCode
 }

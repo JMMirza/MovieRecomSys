@@ -38,6 +38,10 @@
      twoFA: {
          type: Boolean,
          default: false
+     },
+     resetPassCode: {
+         type: String,
+         default: ""
      }
  })
  userSchema.methods.generateAuthToken = function () {
