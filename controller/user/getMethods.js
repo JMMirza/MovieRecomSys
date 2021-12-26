@@ -12,7 +12,7 @@ const passportFB = require('passport');
 const passportTW = require('passport');
 const StrategyFB = require('passport-facebook').Strategy;
 const StrategyTW = require('passport-twitter').Strategy;
-async function getMovies(req, res) {
+async function  getMovies(req, res) {
     try {
         const user = await User.findById(req.user._id)
         if (!user) return res.status(403).send({

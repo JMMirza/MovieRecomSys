@@ -15,7 +15,7 @@ const {
 } = require('../../model/movies')
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
+const {spawn}=require('child_process')
 const config = require('../../config')
 const {
     PythonShell
@@ -92,7 +92,7 @@ async function simpleSignIn(req, res) {
         }
         const token = user.generateAuthToken()
         const temptoken = user.generateTempAuthToken()
-        if (user.twoFA === false) {
+        if (user.twoFA === true) {
             if (user.session === false) {
                 return res.header('x-auth-token', temptoken).status(200).send({
                     message: "user logged in successfully, complete your two step authentication."
@@ -152,23 +152,17 @@ async function machineLearning(req, res) {
         if (!user) return res.status(403).send({
             message: "invalid user"
         })
-        let options = {
-            // mode: 'text',
-            pythonOptions: ['-u'], // get print results in real-time
-            // scriptPath: 'evesdrop.py', //If you are having python_test.py script in same folder, then it's optional.
-            args: [req.body.movie] //An argument which can be accessed in the script using sys.argv[1]
-        };
-
-
-        PythonShell.run('movie_recommendation.py', options, function (err, result) {
-            if (err) throw err;
-            // result is an array consisting of messages collected
-            //during execution of script.
-            console.log('result: ', result.toString());
-            res.status(200).send({
-                search: result
-            })
-        });
+        let sendData
+        console.log(req.body.movie)
+        const python = spawn('python',['movie_recommendation.py',req.body.movie])
+        python.stdout.on('data',function(data){
+            console.log(data)
+            sendData=data.toString()
+        })
+        python.on('close',(code)=>{
+            console.log("on close",code,sendData)
+            res.send(sendData)
+        })
     } catch (error) {
         res.status(500).send(error.message)
     }
@@ -261,92 +255,12 @@ async function getWatchHistory(req, res) {
             user_id: user._id,
             movie_id: req.body.movieid
         })
-
+        
         res.status(200).send(likedMovie)
     } catch (error) {
         console.log(error)
         return res.status(400).send({
             message: error.message
-        })
-    }
-}
-async function forgotPass(req, res) {
-    try {
-        const user = await User.findOne({
-            email: req.body.email
-        })
-        if (!user) return res.status(403).send({
-            message: "user not found"
-        })
-        let val = Math.floor(100000 + Math.random() * 900000);
-        const salt = await bcrypt.genSalt(10)
-        val= await bcrypt.hash(val, salt)
-        user.resetPassCode =val
-        await user.save()
-        const temptoken = user.generateTempAuthToken()
-        console.log(`${val}`)
-        await transporter.sendMail({
-            from: config.nodemailerEmail,
-            to: user.email,
-            subject: 'Reset Password',
-            html: `Use this code ${val} to reset your password.`
-        })
-        return res.status(200).send({
-            message: "Kindly check your email",
-            auth:temptoken
-        })
-    } catch (error) {
-        return res.status(500).send({
-            message: "Error in forget password",
-            error: error.message
-        })
-    }
-}
-async function checkResetCode(req,res){
-    try {
-        const user = await User.findOne({
-            email:req.user.email
-        })
-        if(!user){
-            return res.status(400).send("invalid user")
-        }
-        const validCode = await bcrypt.compare(req.body.code, user.resetPassCode)
-        if (!validCode) return res.status(400).send({
-            message: "invalid code"
-        });
-        return res.status(400).send({
-            message: "Done"
-        });
-    } catch (error) {
-        return res.status(500).send({
-            message: "Error in forget password",
-            error: error.message
-        })
-    }
-}
-async function resetPass(req, res) {
-    try {
-        const user = await User.findOne({
-            email:req.user.email
-        })
-        if(!user){
-            return res.status(400).send("invalid user")
-        }
-        
-        if (req.body.password !== req.body.cpassword) {
-            return res.status(400).send({
-                message: "Password does not match"
-            })
-        }
-        const salt = await bcrypt.genSalt(10)
-        req.body.password = await bcrypt.hash(req.body.password, salt)
-        user.password = req.body.password
-        await user.save()
-        return res.send("Password changed Successfully")
-    } catch (error) {
-        return res.status(500).send({
-            message: "error while reseting the password",
-            error: error.message
         })
     }
 }
@@ -358,8 +272,5 @@ module.exports = {
     watchLater,
     watchHistory,
     getWatchHistory,
-    machineLearning,
-    forgotPass,
-    resetPass,
-    checkResetCode
+    machineLearning
 }
