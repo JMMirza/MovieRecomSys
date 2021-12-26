@@ -23,7 +23,8 @@ const {
 const update = require('../controller/user/update');
 const {
   verifyUser,
-  sendToken
+  sendToken,
+  interest
 } = require('../controller/authentication/getMethods');
 const {
   twoFA
@@ -38,6 +39,7 @@ const updateMiddleware = require('../middleware/updateMiddleware')
 const signinMiddleware = require('../middleware/signinMiddleware')
 const twoFAMiddleware = require('../middleware/twoFAMiddleware')
 
+router.post('/interest', auth, interest)
 router.post('/forgotPass', forgotPass)
 router.post('/checkCode', auth, checkResetCode)
 router.post('/resetPassword', auth, resetPass)

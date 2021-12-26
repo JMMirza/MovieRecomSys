@@ -5,7 +5,13 @@ const movie = mongoose.model('movies', new mongoose.Schema({
         type: String
     },
     genres: {
-        type:String
+        type: String
+    },
+    rating: {
+        type: String
+    },
+    tag: {
+        type: String
     }
 }))
 
